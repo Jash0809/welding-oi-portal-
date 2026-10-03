@@ -54,10 +54,10 @@ button{border:0;border-radius:9px;padding:11px 16px;font-weight:700;cursor:point
     <div class="logo">WO</div>
     <h1>Welding OI Portal</h1>
     <p class="sub">Welding inspection & data management</p>
-    <label>Username</label><input id="username" placeholder="Enter username" value="admin">
-    <label>Password</label><input id="password" type="password" placeholder="Enter password" value="admin123">
+    <label>Email</label><input id="username" placeholder="Enter username" value="">
+    <label>Password</label><input id="password" type="password" placeholder="Enter password">
     <button class="primary" onclick="login()">Login</button>
-    <div class="hint">Demo login: <b>admin</b> / <b>admin123</b></div>
+
   </div>
 </div>
 
@@ -288,13 +288,43 @@ const pumps=Object.keys(weldConfig);
 let selected={pump:'',series:'',joint:'',welder:''};
 let records=JSON.parse(localStorage.getItem('weldingRecords')||'[]');
 
-function login(){
- const u=document.getElementById('username').value.trim(), p=document.getElementById('password').value;
- if(u==='admin'&&p==='admin123'){localStorage.setItem('weldUser',u);startApp()}
- else alert('Invalid login. Use admin / admin123 for this demo.');
+async function login(){
+  const email=document.getElementById('username').value.trim();
+  const password=document.getElementById('password').value;
+
+  if(!email || !password){
+    alert('Enter your email and password.');
+    return;
+  }
+
+  const {data,error}=await supabaseClient.auth.signInWithPassword({
+    email:email,
+    password:password
+  });
+
+  if(error){
+    alert('Login failed: '+error.message);
+    return;
+  }
+
+  localStorage.setItem('weldUser',data.user.email);
+  startApp(data.user);
 }
-function startApp(){document.getElementById('loginScreen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');document.getElementById('loggedUser').textContent=localStorage.getItem('weldUser')||'admin';renderChoices();renderRecords();updateStats();}
-function logout(){localStorage.removeItem('weldUser');location.reload();}
+
+function startApp(user){
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('loggedUser').textContent=user.email;
+  renderChoices();
+  renderRecords();
+  updateStats();
+}
+
+async function logout(){
+  await supabaseClient.auth.signOut();
+  localStorage.removeItem('weldUser');
+  location.reload();
+}
 function makeChoices(id,items,key){
  const box=document.getElementById(id); box.innerHTML='';
  if(!items.length){
