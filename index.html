@@ -553,7 +553,14 @@ function addWelderMaster(){const j=document.getElementById('mdWelderJoint').valu
 function renderMasterLists(){document.getElementById('pumpMasterList').innerHTML=Object.entries(weldConfig).map(([p,v])=>'<div class="master-item"><b>'+p+'</b>'+Object.keys(v.series||{}).join(', ')+'</div>').join('');document.getElementById('jointMasterList').innerHTML=Object.entries(wpsByJoint).map(([j,w])=>'<div class="master-item"><b>'+j+'</b> WPS '+w+'</div>').join('');document.getElementById('welderMasterList').innerHTML=Object.entries(qualifiedWeldersByJoint).map(([j,w])=>'<div class="master-item"><b>'+j+'</b> '+w.join(', ')+'</div>').join('');}
 function loadBuilder(){const ec=localStorage.getItem('editableWeldConfig'),ew=localStorage.getItem('editableWps'),ej=localStorage.getItem('editableJointWelders');if(ec)Object.assign(weldConfig,JSON.parse(ec));if(ew)Object.assign(wpsByJoint,JSON.parse(ew));if(ej)Object.assign(qualifiedWeldersByJoint,JSON.parse(ej));pumps.splice(0,pumps.length,...Object.keys(weldConfig));portalPages.forEach(p=>{addDynamicPage(p)});renderPageList();renderMasterLists();}
 
-if(localStorage.getItem('weldUser')){startApp();loadBuilder();}
+supabaseClient.auth.getSession().then(({data}) => {
+  if (data.session?.user) {
+    startApp(data.session.user);
+    loadBuilder();
+  } else {
+    localStorage.removeItem('weldUser');
+  }
+});
 </script>
 </body>
 </html>
