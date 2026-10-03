@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welding OI Portal</title>
+<style>
+:root{--bg:#f3f6fa;--card:#fff;--nav:#0f2742;--accent:#1769aa;--accent2:#0d8a6a;--text:#17202a;--muted:#687789;--line:#dbe2ea;--danger:#c0392b}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.hidden{display:none!important}.screen{min-height:100vh}
+.login{display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#0f2742,#1769aa)}
+.login-card{width:min(420px,100%);background:#fff;border-radius:18px;padding:34px;box-shadow:0 20px 60px #0004}
+.logo{width:58px;height:58px;border-radius:14px;background:#1769aa;color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px;margin-bottom:18px}
+h1,h2,h3{margin-top:0}.sub{color:var(--muted);margin-top:-8px;margin-bottom:25px}
+label{display:block;font-weight:650;font-size:14px;margin:14px 0 7px} input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;font:inherit;background:#fff} textarea{min-height:90px;resize:vertical}
+button{border:0;border-radius:9px;padding:11px 16px;font-weight:700;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#eaf1f7;color:var(--nav)}.danger{background:#fdecea;color:var(--danger)}
+.login button{width:100%;margin-top:18px}.hint{font-size:12px;color:var(--muted);margin-top:14px}
+.app{display:flex;min-height:100vh}.sidebar{width:245px;background:var(--nav);color:#fff;padding:22px 16px;position:fixed;top:0;bottom:0}.brand{font-size:19px;font-weight:800;padding:10px 12px 24px}.brand small{display:block;font-weight:400;color:#b9c9d9;margin-top:4px}.nav button{width:100%;text-align:left;margin:5px 0;background:transparent;color:#dce8f2}.nav button.active,.nav button:hover{background:#ffffff16}.main{margin-left:245px;width:calc(100% - 245px);padding:28px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.user-pill{background:#fff;border:1px solid var(--line);padding:9px 13px;border-radius:20px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:22px;margin-bottom:18px;box-shadow:0 3px 14px #17304a08}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.choice{border:2px solid var(--line);border-radius:14px;padding:24px;text-align:center;background:#fff;cursor:pointer;transition:.15s}.choice:hover{border-color:#82acd0;transform:translateY(-2px)}.choice.selected{border-color:var(--accent);background:#eef6fc}.choice strong{display:block;font-size:20px}.choice span{font-size:12px;color:var(--muted)}
+.step{display:flex;gap:8px;align-items:center;margin-bottom:20px}.step span{padding:7px 11px;border-radius:20px;background:#e7edf3;color:#607080;font-size:13px}.step span.active{background:var(--accent);color:#fff}
+.selection-summary{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.tag{background:#edf7f4;color:#087057;border-radius:20px;padding:8px 12px;font-size:13px;font-weight:700}
+.actions{display:flex;justify-content:space-between;gap:10px;margin-top:20px}.actions .right{display:flex;gap:10px}
+.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.full{grid-column:1/-1}
+.table-wrap{overflow:auto} table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:11px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap} th{background:#f6f8fa}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.stat{background:#fff;border:1px solid var(--line);padding:20px;border-radius:14px}.stat b{font-size:28px;display:block;margin-top:6px}.empty{padding:35px;text-align:center;color:var(--muted)}
+@media(max-width:850px){.sidebar{width:70px}.brand{font-size:0}.brand:before{content:"WO";font-size:18px}.brand small{display:none}.nav button{font-size:0;text-align:center}.nav button:before{content:"•";font-size:22px}.main{margin-left:70px;width:calc(100% - 70px);padding:16px}.grid3,.formgrid,.statgrid,.grid2{grid-template-columns:1fr}}
+
+.selection-help{margin:0;color:#5e6d7b;font-size:13px;line-height:1.5}.weld-sheet-card{overflow:hidden}.sheet-top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:16px}
+.sheet-selection{display:flex;gap:7px;flex-wrap:wrap}.sheet-selection span{background:#eaf1f7;padding:7px 10px;border-radius:7px;font-size:12px;font-weight:700}
+.excel-sheet{background:#fff;border:1px solid #9aa7b4;border-radius:4px;overflow:hidden}
+.meta-grid{display:grid;grid-template-columns:105px 1fr 120px 90px 90px 120px 90px 90px;border-bottom:1px solid #9aa7b4}
+.meta-grid>div{min-height:42px;border-right:1px solid #9aa7b4;border-bottom:1px solid #9aa7b4;display:flex;align-items:center}
+.meta-label,.meta-group-label,.mini-label{font-weight:700;background:#edf2f7;padding:7px;font-size:12px}.meta-value{padding:0 5px}.meta-value input,.meta-value select,.mini-value input{border:0;border-radius:0;padding:7px;background:transparent;min-width:0}.sheet-title{grid-row:1/4;grid-column:6/9;justify-content:center!important;text-align:center;font-weight:800;font-size:20px;line-height:1.15;background:#d9e2f3!important}
+.meta-group-label{justify-content:center}.mini-label{justify-content:center;font-size:11px}.mini-value{padding:0 3px}
+.sheet-scroll{overflow:auto}.weld-grid{width:100%;min-width:850px;border-collapse:collapse;font-size:12px}.weld-grid th,.weld-grid td{border:1px solid #9aa7b4;padding:0;text-align:center;vertical-align:middle;white-space:nowrap}.weld-grid th{background:#d9e2f3;font-weight:800;padding:7px}.weld-grid td input{width:100%;height:36px;border:0;border-radius:0;text-align:center;background:#fff;padding:5px;font:inherit}.weld-grid td:first-child{background:#f3f6fa;font-weight:700;width:55px}.sheet-actions{display:flex;justify-content:space-between;padding:12px;background:#f1f4f7;gap:10px}.sheet-actions>div{display:flex;gap:8px}
+@media(max-width:850px){.meta-grid{grid-template-columns:90px 1fr 100px 85px}.sheet-title{grid-column:3/5;grid-row:1/3;font-size:15px}.meta-grid .meta-group-label,.meta-grid .mini-label,.meta-grid .mini-value{min-height:36px}.sheet-top{display:block}.sheet-selection{margin-top:8px}.sheet-actions{flex-direction:column}.sheet-actions>div{display:flex;flex-wrap:wrap}}
+.filter-note{font-size:12px;font-weight:500;color:#1769aa;margin-left:8px}.empty-choice{padding:18px;color:#687789;background:#f8fafc;border:1px dashed #cbd5df;border-radius:10px}
+.selection-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.selection-head h3{margin-bottom:5px}.selection-head p{margin:0 0 15px;color:#687789;font-size:13px}.filter-badge{font-size:11px;font-weight:800;background:#edf1f5;color:#69798a;padding:7px 9px;border-radius:999px;white-space:nowrap}.active-filter{background:#e3f3ee;color:#087057}.empty-choice{border:2px dashed #d4dde6;border-radius:14px;padding:24px;text-align:center;color:#748392;grid-column:1/-1;background:#fafbfd}.selection-status{font-size:13px;color:#687789;font-weight:650}.welder-choice{border-color:#6aa88f;background:#f1faf6}.choice.selected{box-shadow:0 0 0 2px #1769aa inset}.primary:disabled{opacity:.45;cursor:not-allowed}.choice.selected{box-shadow:0 0 0 2px #1769aa inset}.step{flex-wrap:wrap}
+
+.builder-tabs{display:flex;gap:8px;margin:12px 0}.builder-tab.active{background:#1769aa;color:#fff}
+.builder-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.builder-form{background:#f5f8fb;border:1px solid #dbe2ea;border-radius:12px;padding:16px;margin:15px 0}
+.master-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.master-box{border:1px solid #dbe2ea;border-radius:12px;padding:15px}.master-box h4{margin-top:0}.master-box button{margin-top:12px;width:100%}
+.master-item{padding:8px 0;border-bottom:1px solid #e4e9ee;font-size:12px}.admin-delete{font-size:11px;padding:5px 8px;background:#fdecea;color:#b42318}
+@media(max-width:900px){.master-grid{grid-template-columns:1fr}.builder-head{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="screen login">
+  <div class="login-card">
+    <div class="logo">WO</div>
+    <h1>Welding OI Portal</h1>
+    <p class="sub">Welding inspection & data management</p>
+    <label>Username</label><input id="username" placeholder="Enter username" value="admin">
+    <label>Password</label><input id="password" type="password" placeholder="Enter password" value="admin123">
+    <button class="primary" onclick="login()">Login</button>
+    <div class="hint">Demo login: <b>admin</b> / <b>admin123</b></div>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand">Welding OI Portal<small>Data management system</small></div>
+    <div class="nav">
+      <button id="navHome" class="active" onclick="showPage('home')">🏠 Selection</button>
+      <button id="navEntry" onclick="showPage('entry')">📝 Data Entry</button>
+      <button id="navRecords" onclick="showPage('records')">📋 Records</button>
+      <button id="navDash" onclick="showPage('dashboard')">📊 Dashboard</button><button id="navAdmin" onclick="showPage('admin')">⚙️ Admin Builder</button>
+      <button onclick="logout()">↪ Logout</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar"><div><h2 id="pageTitle">Welding Selection</h2><div class="sub">Select the required pump, series and weld joint.</div></div><div class="user-pill">👤 <span id="loggedUser"></span></div></div>
+
+    <section id="page-home">
+  <div class="step"><span class="active">1 Pump</span><span>2 Series</span><span>3 Weld Joint</span><span>4 Welder</span></div>
+
+  <div class="card selection-card">
+    <div class="selection-head"><div><h3>1. Pump Selection</h3><p>Select a pump first. This controls the available Series.</p></div><span class="filter-badge">MASTER FILTER</span></div>
+    <div class="grid3" id="pumpChoices"></div>
+  </div>
+
+  <div class="card selection-card">
+    <div class="selection-head"><div><h3>2. Set Series No.</h3><p id="seriesHelp">Select a Pump to load its valid Series numbers.</p></div><span class="filter-badge" id="seriesFilterBadge">Waiting for Pump</span></div>
+    <div class="grid3" id="seriesChoices"><div class="empty-choice">Select a Pump first.</div></div>
+  </div>
+
+  <div class="card selection-card">
+    <div class="selection-head"><div><h3>3. Weld Joint No.</h3><p id="jointHelp">Select a Series to load its valid Weld Joints.</p></div><span class="filter-badge" id="jointFilterBadge">Waiting for Series</span></div>
+    <div class="grid3" id="jointChoices"><div class="empty-choice">Select Pump and Series first.</div></div>
+  </div>
+
+  <div class="card selection-card">
+    <div class="selection-head">
+      <div><h3>4. Dedicated Welder Selection</h3><p id="welderHelp">Select exactly one qualified welder for the selected Weld Joint. Only this selected Welder ID will be carried into the Weld Data Sheet.</p></div>
+      <span class="filter-badge" id="welderFilterBadge">Waiting for Weld Joint</span>
+    </div>
+    <div class="grid3" id="welderChoices"><div class="empty-choice">Select a Weld Joint first.</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Selected Welding Location</h3>
+    <div class="selection-summary" id="summary">
+      <span class="tag">Pump: —</span><span class="tag">Series: —</span><span class="tag">Joint: —</span><span class="tag">Welder: —</span>
+    </div>
+    <div class="actions"><span id="selectionStatus" class="selection-status">Select Pump → Series → Weld Joint → Welder</span><button id="continueEntryBtn" class="primary" onclick="openEntry()" disabled>Continue to Data Entry →</button></div>
+  </div>
+</section>
+
+    <section id="page-entry" class="hidden">
+  <div class="card weld-sheet-card">
+    <div class="sheet-top">
+      <div>
+        <h3 id="entryHeading">WELD DATA SHEET</h3>
+        <p class="sub">Excel-style welding record for the selected pump / series / weld joint.</p>
+      </div>
+      <div class="sheet-selection">
+        <span id="sheetPump">Pump: —</span>
+        <span id="sheetSeries">Series: —</span>
+        <span id="sheetJoint">Joint: —</span><span id="sheetWps">WPS: —</span><span id="sheetWelder">Welder: —</span>
+      </div>
+    </div>
+
+    <div class="excel-sheet">
+      <div class="meta-grid">
+        <div class="meta-label">Doc. No.</div><div class="meta-value"><input id="docNo" placeholder="Document No."></div>
+        <div class="sheet-title">WELD DATA<br>SHEET</div>
+        <div class="meta-label">Hub Name</div><div class="meta-value"><input id="hubName" placeholder="Hub / Project"></div>
+        <div class="meta-label">Ref. WPS</div><div class="meta-value"><input id="refWps" placeholder="WPS No." readonly></div>
+        <div class="meta-label">Date</div><div class="meta-value"><input id="weldDate" type="date"></div>
+
+        <div class="meta-label">Welder ID</div><div class="meta-value"><input id="welderId" placeholder="Selected Welder" readonly></div>
+        <div class="meta-group-label">Shielding Gas</div>
+        <div class="mini-label">Cyl. No.</div><div class="mini-value"><input id="gasCyl"></div>
+        <div class="mini-label">Batch</div><div class="mini-value"><input id="gasBatch"></div>
+        <div class="meta-group-label">Filler Metal</div>
+        <div class="mini-label">Batch</div><div class="mini-value"><input id="fillerBatch"></div>
+        <div class="mini-label">Size</div><div class="mini-value"><input id="fillerSize"></div>
+      </div>
+
+      <div class="sheet-scroll">
+        <table class="weld-grid">
+          <thead>
+            <tr>
+              <th rowspan="2">Layer</th>
+              <th rowspan="2">Inter Pass Temp.<br>Temp. (°C)</th>
+              <th rowspan="2">Gas Flow<br>(Ltr/Min)</th>
+              <th rowspan="2">Arc / Travel<br>Speed</th>
+              <th colspan="2">Electrical Parameters</th>
+              <th rowspan="2">Time<br>T (Sec)</th>
+              <th rowspan="2">Remarks</th>
+            </tr>
+            <tr><th>Current (A)</th><th>Voltage (V)</th></tr>
+          </thead>
+          <tbody id="weldRows"></tbody>
+        </table>
+      </div>
+      <div class="sheet-actions">
+        <button class="secondary" onclick="addWeldRow()">＋ Add Layer</button>
+        <div>
+          <button class="secondary" onclick="showPage('home')">← Back</button>
+          <button class="primary" onclick="saveSheet()">Save Weld Sheet</button>
+          <button class="primary" onclick="exportCurrentSheet()">Export Excel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+    <section id="page-records" class="hidden">
+      <div class="card"><h3>Welding Records</h3><input id="search" placeholder="Search pump, series, joint, WPS, welder..." oninput="renderRecords()"><div class="table-wrap" style="margin-top:15px"><table><thead><tr><th>Date</th><th>Pump</th><th>Series</th><th>Joint</th><th>WPS</th><th>Welder</th><th>Process</th><th>NDT</th><th>Result</th></tr></thead><tbody id="recordsBody"></tbody></table></div></div>
+    </section>
+
+    <section id="page-dashboard" class="hidden">
+      <div class="statgrid"><div class="stat">Total Records<b id="totalStat">0</b></div><div class="stat">Accepted<b id="acceptedStat">0</b></div><div class="stat">Pending / Repair<b id="pendingStat">0</b></div></div>
+      <div class="card" style="margin-top:18px"><h3>Current Selection</h3><div class="selection-summary" id="dashSelection"></div></div>
+    </section>
+  
+<section id="page-admin" class="hidden">
+ <div class="card">
+  <h3>⚙️ Portal Builder</h3>
+  <p class="sub">Manage your portal yourself: create pages and maintain welding master data.</p>
+  <div class="builder-tabs">
+   <button class="secondary builder-tab active" onclick="builderTab('pages')">📄 Page Management</button>
+   <button class="secondary builder-tab" onclick="builderTab('master')">🗂️ Master Data</button>
+  </div>
+ </div>
+ <div id="builder-pages" class="card">
+  <div class="builder-head"><div><h3>Pages</h3><p class="sub">Add a new page whenever you need one.</p></div><button class="primary" onclick="toggleNewPage()">＋ Add New Page</button></div>
+  <div id="newPageForm" class="builder-form hidden">
+   <div class="grid2"><div><label>Page Name</label><input id="newPageName" placeholder="e.g. WPS Database"></div><div><label>Icon</label><input id="newPageIcon" value="📄"></div></div>
+   <label>Description</label><input id="newPageDesc" placeholder="What is this page used for?">
+   <label>Page Type</label><select id="newPageType"><option value="table">Data Table</option><option value="form">Data Entry Form</option><option value="text">Information</option></select>
+   <div class="actions"><button class="secondary" onclick="toggleNewPage()">Cancel</button><button class="primary" onclick="createPortalPage()">Create Page</button></div>
+  </div>
+  <div class="table-wrap"><table><thead><tr><th>Page</th><th>Description</th><th>Type</th><th>Action</th></tr></thead><tbody id="pageList"></tbody></table></div>
+ </div>
+ <div id="builder-master" class="card hidden">
+  <h3>Welding Master Data</h3><p class="sub">Maintain Pump → Series → Weld Joint → WPS → Welder relationships.</p>
+  <div class="master-grid">
+   <div class="master-box"><h4>🏭 Pump → Series</h4><label>Pump</label><input id="mdPump" placeholder="03P1"><label>Series</label><input id="mdSeries" placeholder="C1,C2,C3,C4"><button class="primary" onclick="addPumpMaster()">Add / Update</button><div id="pumpMasterList"></div></div>
+   <div class="master-box"><h4>🔧 Joint → WPS</h4><label>Weld Joint</label><input id="mdJoint" placeholder="W10"><label>WPS No.</label><input id="mdWps" placeholder="003"><button class="primary" onclick="addJointMaster()">Add / Update</button><div id="jointMasterList"></div></div>
+   <div class="master-box"><h4>👷 Joint → Welder</h4><label>Weld Joint</label><input id="mdWelderJoint" placeholder="W10"><label>Qualified Welder IDs</label><input id="mdWelders" placeholder="SAA,SYM"><button class="primary" onclick="addWelderMaster()">Add / Update</button><div id="welderMasterList"></div></div>
+  </div>
+ </div>
+</section>
+</main>
+</div>
+
+<script>
+// Master configuration: change this section when your actual pump/series/joint
+// combinations are known. The UI automatically filters the next level.
+const weldConfig = {
+  '03P1': {
+    series: {
+      'C1': ['W02','W10','W04'],
+      'C2': ['W02','W10','W04'],
+      'C3': ['W02','W10','W04'],
+      'C4': ['W02','W10','W04']
+    }
+  },
+  'B22': {
+    series: {
+      'C1': ['W02','W10','W04'],
+      'C2': ['W02','W10','W04'],
+      'C3': ['W02','W10','W04']
+    }
+  },
+  'B11': {
+    series: {
+      'C1': ['W02','W10','W04'],
+      'C2': ['W02','W10','W04']
+    }
+  }
+};
+
+/*
+  WPS MASTER
+  Initial values transcribed from the handwritten note:
+  W02 -> 004, W10 -> 003, W04 -> 004,
+  W18 -> 004, W12 -> 004, W28 -> 005, W44 -> 007.
+*/
+const wpsByJoint = {
+  'W02':'004',
+  'W10':'003',
+  'W04':'004',
+  'W18':'004',
+  'W12':'004',
+  'W28':'005',
+  'W44':'007'
+};
+
+/*
+  QUALIFIED WELDER MASTER
+  Initial values transcribed from the handwritten note:
+  SAA -> WPS 003,004,007
+  SYM -> WPS 004,005
+  PPT -> WPS 003
+*/
+const qualifiedWeldersByWPS = {
+  '003':['SAA','PPT'],
+  '004':['SAA','SYM'],
+  '005':['SYM'],
+  '007':['SAA']
+};
+
+/*
+  JOINT -> QUALIFIED WELDER MASTER
+  The portal uses this mapping for the 4th filter.
+  Update these lists with your actual qualification records.
+  If a joint is not listed, its WPS qualification list is used as fallback.
+*/
+const qualifiedWeldersByJoint = {
+  'W02':['SAA','PPT'],
+  'W10':['SAA','SYM'],
+  'W04':['SAA','SYM'],
+  'W18':['SAA','SYM'],
+  'W12':['SAA','SYM'],
+  'W28':['SYM'],
+  'W44':['SAA']
+};
+
+const pumps=Object.keys(weldConfig);
+let selected={pump:'',series:'',joint:'',welder:''};
+let records=JSON.parse(localStorage.getItem('weldingRecords')||'[]');
+
+function login(){
+ const u=document.getElementById('username').value.trim(), p=document.getElementById('password').value;
+ if(u==='admin'&&p==='admin123'){localStorage.setItem('weldUser',u);startApp()}
+ else alert('Invalid login. Use admin / admin123 for this demo.');
+}
+function startApp(){document.getElementById('loginScreen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');document.getElementById('loggedUser').textContent=localStorage.getItem('weldUser')||'admin';renderChoices();renderRecords();updateStats();}
+function logout(){localStorage.removeItem('weldUser');location.reload();}
+function makeChoices(id,items,key){
+ const box=document.getElementById(id); box.innerHTML='';
+ if(!items.length){
+   box.innerHTML='<div class="empty-choice">No '+key+' options are configured for the current selection.</div>';
+   return;
+ }
+ items.forEach(v=>{
+   const d=document.createElement('div');
+   d.className='choice'+(selected[key]===v?' selected':'');
+   d.innerHTML='<strong>'+v+'</strong><span>'+(
+     key==='pump'?'Click to filter Series':
+     key==='series'?'Click to filter Weld Joints':
+     key==='joint'?'Click to filter qualified Welders':'Select this dedicated welder'
+   )+'</span>';
+   d.onclick=()=>{
+     if(key==='pump'){
+       selected.pump=v; selected.series=''; selected.joint=''; selected.welder='';
+     }else if(key==='series'){
+       selected.series=v; selected.joint=''; selected.welder='';
+     }else if(key==='joint'){
+       selected.joint=v; selected.welder='';
+     }else{
+       selected.welder=v;
+     }
+     renderChoices();
+   };
+   box.appendChild(d);
+ });
+}
+
+function getSeriesForPump(){
+ if(!selected.pump) return [];
+ const pumpData=weldConfig[selected.pump];
+ return pumpData ? Object.keys(pumpData.series) : [];
+}
+
+function getJointsForSelection(){
+ if(!selected.pump || !selected.series) return [];
+ return weldConfig[selected.pump]?.series?.[selected.series] || [];
+}
+
+function renderChoices(){
+ const availableSeries=getSeriesForPump();
+ const availableJoints=getJointsForSelection();
+ const availableWelders=getQualifiedWeldersForJoint();
+
+ if(selected.series && !availableSeries.includes(selected.series)) selected.series='';
+ if(selected.joint && !getJointsForSelection().includes(selected.joint)) selected.joint='';
+ if(selected.welder && !getQualifiedWeldersForJoint().includes(selected.welder)) selected.welder='';
+
+ makeChoices('pumpChoices',pumps,'pump');
+
+ const seriesBox=document.getElementById('seriesChoices');
+ const jointBox=document.getElementById('jointChoices');
+ const welderBox=document.getElementById('welderChoices');
+
+ if(!selected.pump){
+   seriesBox.innerHTML='<div class="empty-choice">Select a Pump first.</div>';
+   jointBox.innerHTML='<div class="empty-choice">Select Pump and Series first.</div>';
+   welderBox.innerHTML='<div class="empty-choice">Select a Weld Joint first.</div>';
+ }else{
+   makeChoices('seriesChoices',availableSeries,'series');
+   if(!selected.series){
+     jointBox.innerHTML='<div class="empty-choice">Select a Series from the filtered list above.</div>';
+     welderBox.innerHTML='<div class="empty-choice">Select a Weld Joint first.</div>';
+   }else{
+     makeChoices('jointChoices',getJointsForSelection(),'joint');
+     if(!selected.joint){
+       welderBox.innerHTML='<div class="empty-choice">Select a Weld Joint first.</div>';
+     }else{
+       makeChoices('welderChoices',getQualifiedWeldersForJoint(),'welder');
+     }
+   }
+ }
+
+ const sb=document.getElementById('seriesFilterBadge'), jb=document.getElementById('jointFilterBadge'), wb=document.getElementById('welderFilterBadge');
+ const sh=document.getElementById('seriesHelp'), jh=document.getElementById('jointHelp'), wh=document.getElementById('welderHelp');
+
+ if(selected.pump){sb.textContent='Filtered: '+selected.pump;sb.className='filter-badge active-filter';sh.textContent=selected.pump+' has '+availableSeries.length+' configured Series option(s).'}
+ else{sb.textContent='Waiting for Pump';sb.className='filter-badge';sh.textContent='Select a Pump to load its valid Series numbers.'}
+
+ if(selected.pump && selected.series){jb.textContent='Filtered: '+selected.pump+' / '+selected.series;jb.className='filter-badge active-filter';jh.textContent='Showing only Weld Joints configured for '+selected.pump+' / '+selected.series+'.'}
+ else{jb.textContent='Waiting for Series';jb.className='filter-badge';jh.textContent='Select a Series to load its valid Weld Joints.'}
+
+ if(selected.joint){wb.textContent='Filtered: '+selected.joint;wb.className='filter-badge active-filter';wh.textContent='Showing only welders qualified for '+selected.joint+'.'}
+ else{wb.textContent='Waiting for Weld Joint';wb.className='filter-badge';wh.textContent='Select a Weld Joint to load only qualified welders for that joint.'}
+
+ updateSummary();
+ const status=document.getElementById('selectionStatus');
+ const continueBtn=document.getElementById('continueEntryBtn');
+ if(continueBtn) continueBtn.disabled=!(selected.pump && selected.series && selected.joint && selected.welder);
+ if(selected.welder) status.textContent='All 4 selections complete — ready for Weld Data Sheet.';
+ else if(selected.joint) status.textContent='Weld Joint selected — now select a qualified Welder.';
+ else if(selected.series) status.textContent='Series selected — now select a Weld Joint.';
+ else if(selected.pump) status.textContent='Pump selected — now select a filtered Series.';
+ else status.textContent='Select Pump → Series → Weld Joint → Welder';
+}
+
+function getQualifiedWeldersForJoint(){
+ if(!selected.joint) return [];
+ if(qualifiedWeldersByJoint[selected.joint]) return qualifiedWeldersByJoint[selected.joint];
+ const wps=wpsByJoint[selected.joint] || '';
+ return wps ? (qualifiedWeldersByWPS[wps] || []) : [];
+}
+
+function getWpsForSelection(){
+ if(!selected.joint) return '';
+ return wpsByJoint[selected.joint] || '';
+}
+function getQualifiedWeldersForSelection(){
+ return getQualifiedWeldersForJoint();
+}
+function updateFilterHints(){
+ const s=document.getElementById('seriesChoices').previousElementSibling;
+ const j=document.getElementById('jointChoices').previousElementSibling;
+ if(s) s.innerHTML='2. Set Series No. '+(selected.pump ? '<span class="filter-note">Filtered for '+selected.pump+'</span>' : '');
+ if(j) j.innerHTML='3. Weld Joint No. '+(selected.series ? '<span class="filter-note">Filtered for '+selected.pump+' / '+selected.series+'</span>' : '');
+}
+function updateSummary(){
+ document.getElementById('summary').innerHTML=`<span class="tag">Pump: ${selected.pump||'—'}</span><span class="tag">Series: ${selected.series||'—'}</span><span class="tag">Joint: ${selected.joint||'—'}</span><span class="tag">Welder: ${selected.welder||'—'}</span>`;
+ document.getElementById('dashSelection').innerHTML=document.getElementById('summary').innerHTML;
+}
+function openEntry(){
+ if(!selected.pump||!selected.series||!selected.joint||!selected.welder){alert('Please complete all 4 selections: Pump, Series, Weld Joint and qualified Welder.');return}
+ const wps=getWpsForSelection();
+ const welders=getQualifiedWeldersForSelection();
+ if(!wps){alert('No WPS is configured for this weld joint. Please update the WPS master.');return}
+ if(!welders.length){alert('No qualified welders are configured for WPS '+wps+'. Please update the welder qualification master.');return}
+
+ document.getElementById('entryHeading').textContent='WELD DATA SHEET';
+ document.getElementById('sheetPump').textContent='Pump: '+selected.pump;
+ document.getElementById('sheetSeries').textContent='Series: '+selected.series;
+ document.getElementById('sheetJoint').textContent='Joint: '+selected.joint;
+ document.getElementById('sheetWps').textContent='WPS: '+wps;
+ document.getElementById('sheetWelder').textContent='Welder: '+selected.welder;
+
+ const wpsInput=document.getElementById('refWps');
+ wpsInput.value=wps;
+ wpsInput.readOnly=true;
+
+ const welder=document.getElementById('welderId');
+ welder.value=selected.welder;
+ welder.readOnly=true;
+
+ document.getElementById('weldDate').value=new Date().toISOString().slice(0,10);
+ document.getElementById('weldRows').innerHTML='';
+ for(let i=1;i<=8;i++) addWeldRow(i);
+ showPage('entry');
+}
+
+function showPage(page){
+ ['home','entry','records','dashboard'].forEach(x=>document.getElementById('page-'+x).classList.toggle('hidden',x!==page));
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+ const nav={home:'navHome',entry:'navEntry',records:'navRecords',dashboard:'navDash',admin:'navAdmin'}[page]; if(nav)document.getElementById(nav).classList.add('active');
+ document.getElementById('pageTitle').textContent={home:'Welding Selection',entry:'Welding Data Entry',records:'Welding Records',dashboard:'Dashboard',admin:'Portal Builder'}[page];
+ if(page==='records')renderRecords(); if(page==='dashboard')updateStats();
+}
+function saveSheet(){
+ const rows=[...document.querySelectorAll('#weldRows tr')].map(tr=>[...tr.querySelectorAll('input')].map(x=>x.value));
+ const nonEmpty=rows.filter(r=>r.slice(1).some(v=>v));
+ const wps=document.getElementById('refWps').value;
+ const welder=selected.welder || document.getElementById('welderId').value;
+ const qualified=getQualifiedWeldersForSelection();
+ if(!nonEmpty.length){alert('Enter at least one welding layer before saving.');return}
+ if(!wps){alert('WPS is not available for this weld joint.');return}
+ if(!welder){alert('Select a qualified Welder ID before saving the WDS.');return}
+ if(!qualified.includes(welder)){alert('This welder is not qualified for WPS '+wps+' and cannot fill this WDS.');return}
+ const record={
+  id:Date.now(), pump:selected.pump, series:selected.series, joint:selected.joint,
+  date:document.getElementById('weldDate').value, wps:document.getElementById('refWps').value,
+  welder:document.getElementById('welderId').value, docNo:document.getElementById('docNo').value,
+  hub:document.getElementById('hubName').value, rows:nonEmpty
+ };
+ records.unshift(record); localStorage.setItem('weldingRecords',JSON.stringify(records));
+ alert('Weld Data Sheet saved successfully.'); renderRecords(); updateStats();
+}
+function addWeldRow(n){
+ const tbody=document.getElementById('weldRows');
+ const rowNo=n||tbody.children.length+1;
+ const tr=document.createElement('tr');
+ tr.innerHTML=`<td>${rowNo}</td>
+ <td><input type="number" step="1" aria-label="Inter pass temperature"></td>
+ <td><input type="number" step="0.1" aria-label="Gas flow"></td>
+ <td><input type="number" step="0.1" aria-label="Arc travel speed"></td>
+ <td><input type="number" step="1" aria-label="Current"></td>
+ <td><input type="number" step="0.1" aria-label="Voltage"></td>
+ <td><input type="number" step="0.1" aria-label="Time"></td>
+ <td><input type="text" aria-label="Remarks"></td>`;
+ tbody.appendChild(tr);
+}
+function exportCurrentSheet(){
+ const rows=[['Doc. No.',document.getElementById('docNo').value,'Pump',selected.pump,'Series',selected.series,'Weld Joint',selected.joint],
+ ['Hub Name',document.getElementById('hubName').value,'Ref. WPS',document.getElementById('refWps').value,'Date',document.getElementById('weldDate').value,'Welder ID',document.getElementById('welderId').value],
+ ['Shielding Gas Cyl. No.',document.getElementById('gasCyl').value,'Gas Batch',document.getElementById('gasBatch').value,'Filler Batch',document.getElementById('fillerBatch').value,'Filler Size',document.getElementById('fillerSize').value],
+ [],
+ ['Layer','Inter Pass Temp. (°C)','Gas Flow (Ltr/Min)','Arc / Travel Speed','Current (A)','Voltage (V)','Time T (Sec)','Remarks']];
+ [...document.querySelectorAll('#weldRows tr')].forEach(tr=>rows.push([tr.children[0].textContent,...[...tr.querySelectorAll('input')].map(x=>x.value)]));
+ const csv=rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`Weld_${selected.pump}_${selected.series}_${selected.joint}.csv`; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function renderRecords(){
+ const q=(document.getElementById('search')?.value||'').toLowerCase();
+ const rows=records.filter(r=>Object.values(r).join(' ').toLowerCase().includes(q));
+ document.getElementById('recordsBody').innerHTML=rows.length?rows.map(r=>`<tr><td>${r.date||''}</td><td>${r.pump}</td><td>${r.series}</td><td>${r.joint}</td><td>${r.wps||''}</td><td>${r.welder||''}</td><td>${r.process||''}</td><td>${r.ndt||''}</td><td>${r.result||''}</td></tr>`).join(''):`<tr><td colspan="9" class="empty">No welding records found.</td></tr>`;
+}
+function updateStats(){
+ document.getElementById('totalStat').textContent=records.length;
+ document.getElementById('acceptedStat').textContent=records.filter(r=>r.result==='Accepted').length;
+ document.getElementById('pendingStat').textContent=records.filter(r=>['Pending','Repair Required','Rejected'].includes(r.result)).length;
+ updateSummary();
+}
+
+let portalPages=JSON.parse(localStorage.getItem('portalPages')||'[]');
+function builderTab(tab){document.getElementById('builder-pages').classList.toggle('hidden',tab!=='pages');document.getElementById('builder-master').classList.toggle('hidden',tab!=='master');document.querySelectorAll('.builder-tab').forEach((b,i)=>b.classList.toggle('active',(tab==='pages'&&i===0)||(tab==='master'&&i===1)));if(tab==='master')renderMasterLists();}
+function toggleNewPage(){document.getElementById('newPageForm').classList.toggle('hidden')}
+function createPortalPage(){const name=document.getElementById('newPageName').value.trim();if(!name)return alert('Enter a page name.');const page={id:Date.now(),name,icon:document.getElementById('newPageIcon').value||'📄',desc:document.getElementById('newPageDesc').value,type:document.getElementById('newPageType').value};portalPages.push(page);localStorage.setItem('portalPages',JSON.stringify(portalPages));addDynamicPage(page);renderPageList();toggleNewPage();document.getElementById('newPageName').value='';document.getElementById('newPageDesc').value='';}
+function addDynamicPage(p){if(document.getElementById('dynamic-'+p.id))return;const sec=document.createElement('section');sec.id='dynamic-'+p.id;sec.className='hidden';sec.innerHTML='<div class="card"><h3>'+p.icon+' '+p.name+'</h3><p class="sub">'+(p.desc||'')+'</p><div class="dynamic-content"></div></div>';document.querySelector('main').appendChild(sec);const c=sec.querySelector('.dynamic-content');if(p.type==='form')c.innerHTML='<div class="grid2"><div><label>Entry</label><input placeholder="Enter value"></div><div><label>Date</label><input type="date"></div></div><button class="primary" style="margin-top:12px">Save</button>';else if(p.type==='table')c.innerHTML='<div class="table-wrap"><table><thead><tr><th>Field</th><th>Value</th><th>Status</th></tr></thead><tbody><tr><td>New Record</td><td>—</td><td>Ready</td></tr></tbody></table></div>';else c.innerHTML='<p>Your custom information page is ready.</p>';addDynamicNav(p);}
+function addDynamicNav(p){if(document.getElementById('nav-page-'+p.id))return;const b=document.createElement('button');b.id='nav-page-'+p.id;b.textContent=p.icon+' '+p.name;b.onclick=()=>showCustomPage(p.id);document.querySelector('.nav').insertBefore(b,document.getElementById('navAdmin'));}
+function showCustomPage(id){document.querySelectorAll('main > section').forEach(x=>x.classList.add('hidden'));document.getElementById('dynamic-'+id).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));document.getElementById('nav-page-'+id).classList.add('active');document.getElementById('pageTitle').textContent=portalPages.find(p=>p.id===id)?.name||'Page';}
+function renderPageList(){document.getElementById('pageList').innerHTML=portalPages.length?portalPages.map(p=>'<tr><td><b>'+p.icon+' '+p.name+'</b></td><td>'+(p.desc||'—')+'</td><td>'+p.type+'</td><td><button class="admin-delete" onclick="deletePortalPage('+p.id+')">Delete</button></td></tr>').join(''):'<tr><td colspan="4" class="empty">No custom pages yet.</td></tr>';}
+function deletePortalPage(id){if(!confirm('Delete this page?'))return;portalPages=portalPages.filter(p=>p.id!==id);localStorage.setItem('portalPages',JSON.stringify(portalPages));document.getElementById('dynamic-'+id)?.remove();document.getElementById('nav-page-'+id)?.remove();renderPageList();}
+function addPumpMaster(){const p=document.getElementById('mdPump').value.trim(),ss=document.getElementById('mdSeries').value.split(',').map(x=>x.trim()).filter(Boolean);if(!p||!ss.length)return alert('Enter Pump and Series.');weldConfig[p]={series:{}};ss.forEach(x=>weldConfig[p].series[x]=['W02','W10','W04']);localStorage.setItem('editableWeldConfig',JSON.stringify(weldConfig));pumps.splice(0,pumps.length,...Object.keys(weldConfig));renderMasterLists();renderChoices();}
+function addJointMaster(){const j=document.getElementById('mdJoint').value.trim(),w=document.getElementById('mdWps').value.trim();if(!j||!w)return alert('Enter Weld Joint and WPS.');wpsByJoint[j]=w;localStorage.setItem('editableWps',JSON.stringify(wpsByJoint));renderMasterLists();}
+function addWelderMaster(){const j=document.getElementById('mdWelderJoint').value.trim(),ws=document.getElementById('mdWelders').value.split(',').map(x=>x.trim()).filter(Boolean);if(!j||!ws.length)return alert('Enter Weld Joint and Welder IDs.');qualifiedWeldersByJoint[j]=ws;localStorage.setItem('editableJointWelders',JSON.stringify(qualifiedWeldersByJoint));renderMasterLists();renderChoices();}
+function renderMasterLists(){document.getElementById('pumpMasterList').innerHTML=Object.entries(weldConfig).map(([p,v])=>'<div class="master-item"><b>'+p+'</b>'+Object.keys(v.series||{}).join(', ')+'</div>').join('');document.getElementById('jointMasterList').innerHTML=Object.entries(wpsByJoint).map(([j,w])=>'<div class="master-item"><b>'+j+'</b> WPS '+w+'</div>').join('');document.getElementById('welderMasterList').innerHTML=Object.entries(qualifiedWeldersByJoint).map(([j,w])=>'<div class="master-item"><b>'+j+'</b> '+w.join(', ')+'</div>').join('');}
+function loadBuilder(){const ec=localStorage.getItem('editableWeldConfig'),ew=localStorage.getItem('editableWps'),ej=localStorage.getItem('editableJointWelders');if(ec)Object.assign(weldConfig,JSON.parse(ec));if(ew)Object.assign(wpsByJoint,JSON.parse(ew));if(ej)Object.assign(qualifiedWeldersByJoint,JSON.parse(ej));pumps.splice(0,pumps.length,...Object.keys(weldConfig));portalPages.forEach(p=>{addDynamicPage(p)});renderPageList();renderMasterLists();}
+
+if(localStorage.getItem('weldUser')){startApp();loadBuilder();}
+</script>
+</body>
+</html>
